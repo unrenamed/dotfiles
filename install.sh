@@ -22,16 +22,31 @@ fi
 echo >> $SH
 echo '# -------------- unrenamed:dotfiles install ---------------' >> $SH
 
+# Initialize an empty array for selected files to source
+sourced_files=()
+
 # Ask which files should be sourced
 echo "Do you want $SH to source: "
 for file in shell/*; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
         if ask "${filename}?"; then
+            # Source file
             echo "source $(realpath "$file")" >> "$SH"
+            # Add filename to the list of sourced files
+            sourced_files+=("$filename")
         fi
     fi
 done
 
-# Reload the shell
-source "$SH"
+# Install dependencies for the sourced files if they exist
+for filename in ${sourced_files[@]}; do
+    path="install/$filename"
+    command="./$path"
+    if [ -f "$path" ]; then
+        eval "$command"
+    fi
+done
+
+echo
+echo "⚡ To apply changes, please restart your terminal."
